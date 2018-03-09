@@ -58,7 +58,6 @@ TAGS_MAPPINGS = {"graph": "graph_",
                  "3d": "_3d"}
 resources = {}
 
-
 def clean(tag):
     cleantag = tag.strip().replace(" ","_").replace("-","_").replace('"','\\"')
     if cleantag in TAGS_MAPPINGS:
@@ -90,6 +89,60 @@ with open(BOOKMARKS, 'r') as bookmarks_file:
 with open("resources_by_tags.json", 'w') as outfile:
         json.dump(resources, outfile)
 
+def generate_d3_graph(resources_list):
+
+    graph = {}
+
+    id_already_present = []
+    for tag, resources in resources_list.items():
+        if tag not in id_already_present:
+            graph.setdefault("nodes", []).append({"id": tag,
+                                                  "label": tag.replace("_", " "),
+                                                  "type": "tag",
+                                                  "group": 1})
+            id_already_present.append(tag)
+
+        for res in resources:
+            if res["id"] not in id_already_present:
+                graph.setdefault("nodes", []).append({"id": res["id"],
+                                                      "label": res["label"],
+                                                      "uri": res["uri"],
+                                                      "type": res["type"],
+                                                      "group": 2 if res["type"] == BOOKMARK else 3
+                                                      })
+                id_already_present.append(res["id"])
+
+            graph.setdefault("links", []).append({"source": tag,
+                                                "target": res["id"],
+                                                "thickness": 1
+                                                })
+
+
+    for child, parent in ONTOLOGY.items():
+        if child not in id_already_present:
+            graph.setdefault("nodes", []).append({"id": child,
+                                                  "label": child.replace("_", " "),
+                                                  "type": "tag",
+                                                  "group": 1})
+            id_already_present.append(child)
+        if parent not in id_already_present:
+            graph.setdefault("nodes", []).append({"id": parent,
+                                                  "label": parent.replace("_", " "),
+                                                  "type": "tag",
+                                                  "group": 1})
+            id_already_present.append(parent)
+
+        graph.setdefault("links", []).append({"source": parent,
+                                              "target": child,
+                                              "thickness": 5
+                                              })
+
+
+    with open("resources.d3.json", 'w') as outfile:
+        json.dump(graph, outfile)
+
+
+
 def generate_dot_file(resources_list):
 
     id_already_present = []
@@ -111,7 +164,7 @@ def generate_dot_file(resources_list):
 
     for child, parent in ONTOLOGY.items():
         if child not in id_already_present:
-            print("%s [shape=ellipse label=\"%s\" style=filled fillcolor=\"0.3 0.8 0.8\"];" % (child, child.replace("_", " ")))
+            print("%s ;" % (child, child.replace("_", " ")))
             id_already_present.append(child)
         if parent not in id_already_present:
             print("%s [shape=ellipse label=\"%s\" style=filled fillcolor=\"0.3 0.8 0.8\"];" % (parent, parent.replace("_", " ")))
@@ -119,4 +172,5 @@ def generate_dot_file(resources_list):
         print("%s -> %s;"% (parent, child))
     print("}")
 
-generate_dot_file(resources)
+#generate_dot_file(resources)
+generate_d3_graph(resources)
