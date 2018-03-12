@@ -1,0 +1,36 @@
+{
+
+  "manifest_version": 2,
+  "name": "BookmarkNet",
+  "version": "1.0",
+
+  "description": "Displays a graph of all your bookmarks, organized by tags.",
+
+  "browser_action": {
+    "default_icon": "icons/tags.svg",
+    "default_title": "BookmarkNet"
+  },
+ "permissions": [
+    "bookmarks"
+  ],
+  "icons": {
+    "48": "icons/tags.svg",
+    "96": "icons/tags.svg"
+  },
+
+"background": {
+    "scripts": ["background.js"]
+},
+
+"content_security_policy": "script-src 'self';object-src 'self';",
+
+"web_accessible_resources": [
+	"js/d3.min.js",
+	"css/fontawesome-all.min.css",
+	"webfonts/*",
+	"d3-interactive.html",
+	"resources.d3.json",
+	"interactive.js"
+  ]
+
+}
